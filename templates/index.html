@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>METAR Reader</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f2c5e 0%, #1a5276 45%, #2874a6 100%);
+      color: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: #aad4f5;
+      margin-top: 0.4rem;
+      font-size: 1rem;
+    }
+
+    .search-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+
+    .search-card label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .search-row input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 2px solid #d0dce8;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-row input:focus {
+      border-color: #2874a6;
+    }
+
+    .search-row button {
+      padding: 0.75rem 1.4rem;
+      background: #1a5276;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .search-row button:hover {
+      background: #0f2c5e;
+    }
+
+    .hint {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .error-box {
+      margin-top: 1.2rem;
+      background: #fdecea;
+      border-left: 4px solid #e74c3c;
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      color: #c0392b;
+      font-size: 0.9rem;
+    }
+
+    /* ---- Weather result card ---- */
+    .weather-card {
+      width: 100%;
+      max-width: 540px;
+      margin-top: 1.5rem;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    .weather-hero {
+      padding: 2rem 2rem 1.5rem;
+      background: linear-gradient(135deg, #1a5276, #2e86c1);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .weather-emoji {
+      font-size: 4rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .weather-hero-text h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .weather-hero-text .station-label {
+      font-size: 0.8rem;
+      opacity: 0.75;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.25rem;
+    }
+
+    .weather-hero-text .temp-big {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 0.25rem 0;
+    }
+
+    .weather-hero-text .summary-line {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      margin-top: 0.4rem;
+    }
+
+    .weather-body {
+      padding: 1.5rem 2rem;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .detail-item {
+      background: #f4f8fc;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .detail-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #888;
+    }
+
+    .detail-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a2744;
+    }
+
+    .raw-metar {
+      margin-top: 1.2rem;
+      background: #f0f4f8;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    .raw-metar summary {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .raw-metar code {
+      display: block;
+      margin-top: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #333;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .auto-badge {
+      display: inline-block;
+      background: #e8f4fd;
+      color: #1a5276;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .time-line {
+      font-size: 0.8rem;
+      opacity: 0.75;
+      margin-top: 0.15rem;
+    }
+
+    @media (max-width: 480px) {
+      .detail-grid { grid-template-columns: 1fr; }
+      .weather-hero { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>✈️ METAR Reader</h1>
+    <p>Type an airport code to get the current weather report in plain English.</p>
+  </header>
+
+  <div class="search-card">
+    <form method="POST" action="/">
+      <label for="airport">Airport ICAO Code</label>
+      <div class="search-row">
+        <input
+          type="text"
+          id="airport"
+          name="airport"
+          value="{{ airport_code }}"
+          placeholder="e.g. KSLC"
+          maxlength="4"
+          autocomplete="off"
+          autofocus
+        />
+        <button type="submit">Get Weather</button>
+      </div>
+      <p class="hint">Use the 4-letter ICAO code &mdash; e.g. KJFK (New York), EGLL (London Heathrow), KSLC (Salt Lake City)</p>
+    </form>
+
+    {% if error %}
+    <div class="error-box">{{ error }}</div>
+    {% endif %}
+  </div>
+
+  {% if weather %}
+  <div class="weather-card">
+
+    <div class="weather-hero">
+      <div class="weather-emoji">{{ weather.emoji }}</div>
+      <div class="weather-hero-text">
+        <div class="station-label">
+          {{ weather.station }}
+          {% if weather.auto %}<span class="auto-badge">Auto</span>{% endif %}
+        </div>
+        {% if weather.temperature_f is not none %}
+          <div class="temp-big">{{ weather.temperature_f }}°F</div>
+        {% endif %}
+        <div class="summary-line">{{ weather.summary }}</div>
+        {% if weather.time_utc %}
+          <div class="time-line">Report time: {{ weather.time_utc }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="weather-body">
+      <div class="detail-grid">
+        {% for item in weather.details %}
+        <div class="detail-item">
+          <span class="detail-label">{{ item.icon }} {{ item.label }}</span>
+          <span class="detail-value">{{ item.value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <details class="raw-metar">
+        <summary>Raw METAR</summary>
+        <code>{{ weather.raw }}</code>
+      </details>
+    </div>
+
+  </div>
+  {% endif %}
+
+</body>
+</html>

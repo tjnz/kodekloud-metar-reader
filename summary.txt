@@ -1,0 +1,21 @@
+Project files:
+  app.py             — Flask routes, fetches METAR from aviationweather.gov
+  metar_parser.py    — Full METAR decoder (no external libraries)
+  templates/index.html — Styled UI with search form + results card
+  requirements.txt   — flask>=3.0
+
+To run:
+  pip install flask
+  python3 app.py
+  # → http://127.0.0.1:5000
+
+What the parser handles:
+  - Wind          — speed in mph/kt, direction in plain English (e.g. "from the northwest"), gusts
+  - Visibility    — statute miles (US) and metric meters (international), CAVOK
+  - Weather       — rain, snow, fog, thunderstorms, haze, ice, with intensity (light/heavy)
+  - Sky layers    — Clear, Few, Scattered, Broken, Overcast with heights in feet; CB/TCU flags
+  - Temperature   — Celsius to Fahrenheit, dew point, Magnus-formula humidity %
+  - Altimeter     — inHg (A-format) and hPa (Q-format)
+  - Emoji         — chosen from conditions (☀️ ⛅ ☁️ 🌧️ ❄️ ⛈️ 🌫️)
+
+Works for both US airports (ICAO KXXX) and international ones (EGLL, YSSY, etc.).
