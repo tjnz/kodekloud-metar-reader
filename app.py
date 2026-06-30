@@ -1,3 +1,5 @@
+"""Flask web app that fetches and displays live METAR aviation weather reports."""
+
 import re
 import urllib.request
 import urllib.error
@@ -10,6 +12,12 @@ METAR_URL = "https://aviationweather.gov/api/data/metar?ids={}&format=raw"
 
 
 def fetch_metar(airport_code):
+    """Fetch the raw METAR string for *airport_code* from aviationweather.gov.
+
+    Returns a ``(raw_metar, error_message)`` tuple.  Exactly one of the two
+    values will be ``None``: on success ``error_message`` is ``None``; on
+    failure ``raw_metar`` is ``None`` and ``error_message`` describes the problem.
+    """
     url = METAR_URL.format(urllib.request.quote(airport_code.upper()))
     req = urllib.request.Request(url, headers={"User-Agent": "METAR-Reader/1.0"})
     try:
@@ -40,6 +48,7 @@ def fetch_metar(airport_code):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    """Render the search form (GET) and display decoded weather results (POST)."""
     weather = None
     error = None
     airport_code = ""
