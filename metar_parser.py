@@ -48,16 +48,16 @@ SKY_ORDER = ['CLR', 'SKC', 'NSC', 'CAVOK', 'FEW', 'SCT', 'BKN', 'OVC', 'VV']
 
 
 def _get_emoji(weather_list, sky_code):
-    wx = ' '.join(weather_list).upper()
-    if 'TS' in wx or 'thunderstorm' in wx:
+    wx = ' '.join(weather_list).lower()
+    if 'thunderstorm' in wx:
         return '⛈️'
-    if 'SN' in wx or 'snow' in wx:
+    if 'snow' in wx or 'ice' in wx:
         return '❄️'
-    if 'FG' in wx or 'fog' in wx:
+    if 'fog' in wx:
         return '🌫️'
-    if 'RA' in wx or 'DZ' in wx or 'rain' in wx or 'drizzle' in wx:
+    if 'rain' in wx or 'drizzle' in wx:
         return '🌧️'
-    if 'HZ' in wx or 'haze' in wx:
+    if 'haze' in wx:
         return '🌫️'
     if sky_code in ('OVC', 'BKN'):
         return '☁️'
