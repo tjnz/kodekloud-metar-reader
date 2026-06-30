@@ -33,7 +33,7 @@ METAR Reader decodes that into human-readable weather data automatically.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/kodekloud-metar-reader.git
+git clone https://github.com/tjnz/kodekloud-metar-reader.git
 cd kodekloud-metar-reader
 
 # 2. Create and activate a virtual environment
