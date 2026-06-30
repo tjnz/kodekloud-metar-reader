@@ -1,3 +1,4 @@
+import math
 import re
 
 def celsius_to_fahrenheit(c):
@@ -332,7 +333,6 @@ def parse_metar(raw):
             result['temperature_f'] = celsius_to_fahrenheit(temp_c)
             result['dewpoint_c']    = dew_c
             result['dewpoint_f']    = celsius_to_fahrenheit(dew_c)
-            import math
             es_t = math.exp(17.625 * temp_c / (243.04 + temp_c))
             es_d = math.exp(17.625 * dew_c  / (243.04 + dew_c))
             result['humidity'] = min(100, max(0, round(100 * es_d / es_t)))
