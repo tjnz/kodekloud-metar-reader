@@ -58,6 +58,17 @@ Open [http://localhost:5000](http://localhost:5000) in your browser.
 
 Not sure of the code? ICAO codes can be looked up at [ourairports.com](https://ourairports.com).
 
+## Running the tests
+
+Install the dev dependencies, then run pytest:
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/ -v
+```
+
+The suite has 59 tests covering the METAR decoder (unit tests with mock strings), the HTTP fetch layer (mocked network calls), and the Flask routes (form validation and rendering).
+
 ## Project structure
 
 ```
@@ -65,7 +76,11 @@ app.py              # Flask routes — fetches METAR and renders the page
 metar_parser.py     # METAR decoder (no external libraries)
 templates/
   index.html        # Single-page UI with search form and results card
-requirements.txt    # Pinned Python dependencies
+requirements.txt    # Pinned runtime dependencies
+requirements-dev.txt  # Dev dependencies (pytest)
+tests/
+  test_metar_parser.py  # Parser unit tests
+  test_app.py           # HTTP fetch and route tests
 ```
 
 ## Data source
