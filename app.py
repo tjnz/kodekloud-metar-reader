@@ -24,22 +24,33 @@ def fetch_metar(airport_code):
         with urllib.request.urlopen(req, timeout=10) as resp:
             text = resp.read().decode("utf-8").strip()
     except urllib.error.HTTPError as e:
-        return None, f"Airport lookup failed (HTTP {e.code}). Check the airport code and try again."
+        return (
+            None,
+            f"Airport lookup failed (HTTP {e.code}). "
+            "Check the airport code and try again.",
+        )
     except urllib.error.URLError:
-        return None, "Could not reach the weather service. Check your internet connection."
+        return (
+            None,
+            "Could not reach the weather service. Check your internet connection.",
+        )
 
     if not text:
-        return None, f'No METAR data found for "{airport_code.upper()}". Make sure you\'re using a valid ICAO airport code (e.g. KSLC, EGLL, KJFK).'
+        return (
+            None,
+            f'No METAR data found for "{airport_code.upper()}". '
+            "Make sure you're using a valid ICAO airport code (e.g. KSLC, EGLL, KJFK).",
+        )
 
     # The API may return multiple lines; take the first METAR line
     for line in text.splitlines():
         line = line.strip()
         # A valid METAR starts with the station ID or METAR keyword
-        if re.match(r'^(METAR\s+)?[A-Z]{4}\s+\d{6}Z', line):
+        if re.match(r"^(METAR\s+)?[A-Z]{4}\s+\d{6}Z", line):
             return line, None
 
     # Fallback: return first non-empty line and try to parse it
-    first = next((l.strip() for l in text.splitlines() if l.strip()), None)
+    first = next((line.strip() for line in text.splitlines() if line.strip()), None)
     if first:
         return first, None
 
@@ -57,7 +68,7 @@ def index():
         airport_code = request.form.get("airport", "").strip()
         if not airport_code:
             error = "Please enter an airport code."
-        elif not re.match(r'^[A-Za-z0-9]{3,4}$', airport_code):
+        elif not re.match(r"^[A-Za-z0-9]{3,4}$", airport_code):
             error = "Enter a 3- or 4-letter ICAO airport code (e.g. KSLC, KJFK, EGLL)."
         else:
             raw, fetch_error = fetch_metar(airport_code)
@@ -66,9 +77,14 @@ def index():
             else:
                 weather = parse_metar(raw)
                 if weather is None:
-                    error = "Could not decode the METAR data. Please try a different airport."
+                    error = (
+                        "Could not decode the METAR data. "
+                        "Please try a different airport."
+                    )
 
-    return render_template("index.html", weather=weather, error=error, airport_code=airport_code.upper())
+    return render_template(
+        "index.html", weather=weather, error=error, airport_code=airport_code.upper()
+    )
 
 
 if __name__ == "__main__":
